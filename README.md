@@ -1,4 +1,4 @@
-# fieloplt-fielocc
+# Quickstart
 
 <a href="https://githubsfdeploy.herokuapp.com?owner=Fielo-Connectors&repo=fieloplt-fielocc">
   <img alt="Deploy to Salesforce"
