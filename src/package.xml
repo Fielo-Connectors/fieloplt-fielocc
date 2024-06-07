@@ -9,11 +9,8 @@
         <name>PermissionSet</name>
     </types>
     <types>
-        <members>FieloCC__Communication__c</members>
-        <members>FieloCC__CommunicationCampaign__c</members>
-        <members>FieloCC__CommunicationTemplate__c</members>
-        <name>CustomObject</name>
+        <members>*</members>
+        <name>CustomField</name>
     </types>
     <version>59.0</version>
-    <fullName>FieloPLTWithCommunications</fullName>
 </Package>
