@@ -5,20 +5,16 @@
         <name>ApexClass</name>
     </types>
     <types>
-        <members>FieloPLTWithCommunications</members>
-        <name>PermissionSet</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>CustomObject</name>
-    </types>
-    <types>
         <members>FieloCC__CommunicationCampaign__c.Challenge__c</members>
         <members>FieloCC__CommunicationCampaign__c.Program__c</members>
         <members>FieloCC__CommunicationCampaign__c.Promotion__c</members>
         <members>FieloCC__CommunicationTemplate__c.Program__c</members>
         <members>FieloCC__Communication__c.Segment__c</members>
         <name>CustomField</name>
+    </types>
+    <types>
+        <members>FieloPLTWithCommunications</members>
+        <name>PermissionSet</name>
     </types>
     <version>59.0</version>
 </Package>
