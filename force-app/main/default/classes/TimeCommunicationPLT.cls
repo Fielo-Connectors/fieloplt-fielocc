@@ -1,16 +1,10 @@
 global class TimeCommunicationPLT implements TimeCommunicationInterface{
 
-    public static String namespacePrefix {get{
-        if (namespacePrefix == null) {
-            List<Organization> orgDef = (List<Organization>) Database.query('SELECT NamespacePrefix FROM Organization');
-            namespacePrefix = orgDef.isEmpty() ? '' : String.isNotBlank(orgDef.get(0).NamespacePrefix) ? (orgDef.get(0).NamespacePrefix + '__') : '';
-        }
-        return namespacePrefix;
-    } set;}
-
     // global void processTimeCommunications(CommunicationExecution__c execution, Set<Id> recordIds) {
     global void processTimeCommunications(Set<Id> recordIds) {
         try {
+            String namespacePrefix = SObjectUtils.namespacePrefix;
+
             Set<Id> activeMemberIds = new Set<Id>();
             for (SObject member : Database.query(
                 'SELECT Id ' + 
@@ -23,8 +17,8 @@ global class TimeCommunicationPLT implements TimeCommunicationInterface{
             recordIds.retainAll(activeMemberIds);
 
             DateTime now = DateTime.now();
-            DateTime startDateTime = DateTime.newInstance(now.year(), now.month(), now.day(), now.hour(), 0, 0);
-            DateTime endDateTime = DateTime.newInstance(now.year(), now.month(), now.day(), now.hour(), 59, 59);
+            Date today = now.dateGmt();
+            Integer hour = now.hourGmt();
 
             Map<Id, FieloCC__Communication__c> communicationsMap = new Map<Id, FieloCC__Communication__c>(
                 (List<FieloCC__Communication__c>) Database.query(
@@ -35,15 +29,14 @@ global class TimeCommunicationPLT implements TimeCommunicationInterface{
                     'FieloCC__CommunicationMode__c = \'Scheduled\' AND ' +
                     namespacePrefix + 'Segment__c != null AND ' +
                     '(FieloCC__NextExecutionDateTime__c != null AND ' +
-                    'FieloCC__NextExecutionDateTime__c >= :startDateTime AND ' +
-                    'FieloCC__NextExecutionDateTime__c <= :endDateTime) AND ' +
-                    '((FieloCC__RepetitionMode__c = \'SpecificDate\' AND FieloCC__EndDate__c >= :now) OR ' +
-                    '(FieloCC__RepetitionMode__c = \'After\' AND FieloCC__RepetitionCount__c < FieloCC__FrequencyEnds__c))'
+                    'HOUR_IN_DAY(FieloCC__NextExecutionDateTime__c) =: hour) AND ' +
+                    '((FieloCC__RepetitionMode__c = \'SpecificDate\' AND FieloCC__EndDate__c >= :today) OR ' +
+                    '(FieloCC__RepetitionMode__c = \'After\' AND FieloCC__IsRepetitionOver__c = false))'
                 )
             );
 
             Map<Id, Set<Id>> communicationsBySegment = new Map<Id, Set<Id>>();
-            for (FieloCC__Communication__c communication : communicationsMap.values()) {
+            for (Communication__c communication : communicationsMap.values()) {
                 Id segmentId = (Id)communication.get(namespacePrefix + 'Segment__c');
 
                 if (communicationsBySegment.containsKey(segmentId)) {
