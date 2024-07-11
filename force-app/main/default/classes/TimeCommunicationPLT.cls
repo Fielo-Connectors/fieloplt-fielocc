@@ -1,10 +1,16 @@
 global class TimeCommunicationPLT implements TimeCommunicationInterface{
 
+    public static String namespacePrefix {get{
+        if (namespacePrefix == null) {
+            List<Organization> orgDef = (List<Organization>) Database.query('SELECT NamespacePrefix FROM Organization');
+            namespacePrefix = orgDef.isEmpty() ? '' : String.isNotBlank(orgDef.get(0).NamespacePrefix) ? (orgDef.get(0).NamespacePrefix + '__') : '';
+        }
+        return namespacePrefix;
+    } set;}
+
     // global void processTimeCommunications(CommunicationExecution__c execution, Set<Id> recordIds) {
     global void processTimeCommunications(Set<Id> recordIds) {
         try {
-            String namespacePrefix = SObjectUtils.namespacePrefix;
-
             Set<Id> activeMemberIds = new Set<Id>();
             for (SObject member : Database.query(
                 'SELECT Id ' + 
