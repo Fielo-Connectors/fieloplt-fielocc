@@ -16,7 +16,7 @@ global class TimeCommunicationPLT implements TimeCommunicationInterface{
             }
             recordIds.retainAll(activeMemberIds);
 
-            DateTime now = DateTime.now();
+            DateTime now = System.now();
             Date today = now.dateGmt();
             Integer hour = now.hourGmt();
 
@@ -36,7 +36,7 @@ global class TimeCommunicationPLT implements TimeCommunicationInterface{
             );
 
             Map<Id, Set<Id>> communicationsBySegment = new Map<Id, Set<Id>>();
-            for (Communication__c communication : communicationsMap.values()) {
+            for (FieloCC__Communication__c communication : communicationsMap.values()) {
                 Id segmentId = (Id)communication.get(namespacePrefix + 'Segment__c');
 
                 if (communicationsBySegment.containsKey(segmentId)) {
