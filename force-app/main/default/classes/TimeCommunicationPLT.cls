@@ -1,4 +1,4 @@
-global class TimeCommunicationPLT implements TimeCommunicationInterface{
+global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
 
     public static String namespacePrefix {get{
         if (namespacePrefix == null) {
