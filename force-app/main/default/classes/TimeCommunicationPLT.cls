@@ -1,4 +1,4 @@
-global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
+global without sharing class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
 
     public static String namespacePrefix {get{
         if (namespacePrefix == null) {
@@ -11,6 +11,22 @@ global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
     // global void processTimeCommunications(CommunicationExecution__c execution, Set<Id> recordIds) {
     global void processTimeCommunications(Set<Id> recordIds) {
         try {
+            DateTime now = System.now();
+            Date today = now.dateGmt();
+            Integer hour = now.hourGmt();
+            Integer previousHour = hour-1;
+            DateTime batchLastCompleteDate = null;
+            List<AsyncApexJob> lastJob = [SELECT Id,  CompletedDate FROM AsyncApexJob WHERE ApexClass.Name = 'ProcessTimeCommunicationsBatchSchedule' AND Status IN ('Aborted','Completed','Failed') ORDER BY CompletedDate DESC NULLS LAST LIMIT 1];
+            if(!lastJob.isEmpty()){
+                batchLastCompleteDate = lastJob[0]?.CompletedDate;
+            }
+
+            String nextExecutionWhere;
+            if(batchLastCompleteDate != null) {
+                nextExecutionWhere = ' FieloCC__NextExecutionDateTime__c >=: batchLastCompleteDate AND FieloCC__NextExecutionDateTime__c <=: now ';
+            }else{
+                nextExecutionWhere = ' DAY_ONLY(FieloCC__NextExecutionDateTime__c) =: today AND (HOUR_IN_DAY(FieloCC__NextExecutionDateTime__c) =: hour OR HOUR_IN_DAY(FieloCC__NextExecutionDateTime__c) =: previousHour) ';
+            }
             Set<Id> activeMemberIds = new Set<Id>();
             for (SObject member : Database.query(
                 'SELECT Id ' + 
@@ -22,10 +38,6 @@ global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
             }
             recordIds.retainAll(activeMemberIds);
 
-            DateTime now = System.now();
-            Date today = now.dateGmt();
-            Integer hour = now.hourGmt();
-
             Map<Id, FieloCC__Communication__c> communicationsMap = new Map<Id, FieloCC__Communication__c>(
                 (List<FieloCC__Communication__c>) Database.query(
                     'SELECT ' + namespacePrefix + 'Segment__c ' + 
@@ -35,7 +47,7 @@ global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
                     'FieloCC__CommunicationMode__c = \'Scheduled\' AND ' +
                     namespacePrefix + 'Segment__c != null AND ' +
                     '(FieloCC__NextExecutionDateTime__c != null AND ' +
-                    'HOUR_IN_DAY(FieloCC__NextExecutionDateTime__c) =: hour) AND ' +
+                    nextExecutionWhere + ') AND ' +
                     '((FieloCC__RepetitionMode__c = \'SpecificDate\' AND FieloCC__EndDate__c >= :today) OR ' +
                     '(FieloCC__RepetitionMode__c = \'After\' AND FieloCC__IsRepetitionOver__c = false))'
                 )
@@ -87,7 +99,7 @@ global class TimeCommunicationPLT implements FieloCC.TimeCommunicationInterface{
                 e.getCause()    + ' - ' +
                 e.getStackTraceString()
             );
-            if (Test.isRunningTest()) throw e;
+            if (!Test.isRunningTest()) throw e;
         }
     }
 }
