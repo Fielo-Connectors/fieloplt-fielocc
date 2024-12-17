@@ -14,7 +14,7 @@ global without sharing class TimeCommunicationPLTCallable implements Callable{
                 return this.processTimeCommunications(args);
             }
             when else {
-                throw new FieloCC.FieloCCException('Method not implemented');
+                throw new FieloPLT.FieloException('Method not implemented');
             }
         }
     }
@@ -26,7 +26,7 @@ global without sharing class TimeCommunicationPLTCallable implements Callable{
         Set<Id> communicationIds = (Set<Id>)args.get('communicationIds');
 
         if(recordIds?.isEmpty() == true ||communicationIds?.isEmpty() == true) {
-            throw new FieloCC.FieloCCException('recordIds and communicationIds are required');
+            throw new FieloPLT.FieloException('recordIds and communicationIds are required');
         }
 
         try {           
